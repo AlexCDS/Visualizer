@@ -18,61 +18,24 @@ public class CameraController : MonoBehaviour
     float xRot = 0;
     float yRot = 0;
 
-    Vector2 previousTouchPosition;
-    Vector3 dir;
-    
     void Update()
     {
-        InputActionMap map = new InputActionMap("Camera Controller");
-
-        if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+        if (InputController.Touches == 2)
         {
-            previousTouchPosition = Input.mousePosition;
-        }
-        
-        if (Input.GetMouseButton(1))
-        {
-            Vector3 rot = dir * rotSpeed * Time.deltaTime;
+            Vector3 rot = InputController.Delta * rotSpeed * Time.deltaTime;
             xRot += rot.y;
             yRot += rot.x;
 
             rotationAnchor.transform.rotation = Quaternion.Euler(xRot, yRot, 0);
         }
-        else if (Input.GetMouseButton(0))
+        else if(InputController.Touches == 1)
         {
-            gameObject.transform.position = gameObject.transform.position + gameObject.transform.rotation * dir * Time.deltaTime;
+            gameObject.transform.position = gameObject.transform.position + gameObject.transform.rotation * InputController.Delta * Time.deltaTime;
         }
-        else
-            dir = Vector3.zero;
 
-        if (Input.mouseScrollDelta.magnitude > 0)
+        if (InputController.ScrollDelta.magnitude > 0)
         {
-            gameObject.transform.position += gameObject.transform.forward * zoomSpeed * Input.mouseScrollDelta.magnitude * Mathf.Sign(Input.mouseScrollDelta.y) * Time.deltaTime;
+            gameObject.transform.position += gameObject.transform.forward * zoomSpeed * InputController.ScrollDelta.magnitude * Mathf.Sign(Input.mouseScrollDelta.y) * Time.deltaTime;
         }
     }
-
-    private void FixedUpdate()
-    {
-        if (Input.GetMouseButton(0) || Input.GetMouseButton(1))
-        {
-            Vector2 diff = Input.mousePosition.ToVector2() - previousTouchPosition;
-            if (diff.magnitude > minDiffLenght)
-            {
-                float t = (diff.magnitude - minDiffLenght) / (maxDiffLenght - minDiffLenght);
-                float s = movementIntensity.Evaluate(t) * speed;
-
-                diff = diff = diff.normalized * s;
-                dir = new Vector3(diff.x, diff.y);
-            }
-            else
-                dir = Vector3.zero;
-
-            previousTouchPosition = Input.mousePosition;
-        }
-    }
-}
-
-public static class Extension
-{
-    public static Vector2 ToVector2(this Vector3 v) => new Vector2(v.x, v.y);
 }
