@@ -358,7 +358,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minIntensity: 0
   maxIntensity: 10
-  lightName: Directional light
+  lightName: D-Light
 --- !u!1 &763509606
 GameObject:
   m_ObjectHideFlags: 0

@@ -9,7 +9,7 @@ public class MeshController : MonoBehaviour
     
     void Start()
     {
-        UI.RequestSliderControl(OnSliderValueChanged, "Mesh scale", initial: (1 - minScale) / maxScale);
+        UI.RequestSliderControl(OnSliderValueChanged, "Mesh scale", "Mesh", initial: (1 - minScale) / maxScale);
     }
 
     private void OnSliderValueChanged(float t)

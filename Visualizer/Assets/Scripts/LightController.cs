@@ -11,7 +11,7 @@ public class LightController : MonoBehaviour
     void Start()
     {
         directionalLight = GetComponent<Light>();
-        UI.RequestSliderControl(OnSliderValueChanged, $"{lightName} intensity:", initial: (directionalLight.intensity - minIntensity) / maxIntensity);
+        UI.RequestSliderControl(OnSliderValueChanged, $"{lightName} intensity", "Lighting", initial: (directionalLight.intensity - minIntensity) / maxIntensity);
     }
 
     public void OnSliderValueChanged(float t)
