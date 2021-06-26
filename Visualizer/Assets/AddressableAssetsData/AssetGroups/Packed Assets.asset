@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Packed Assets
+  m_EditorClassIdentifier: 
+  m_GroupName: Packed Assets
+  m_Data:
+    m_SerializedData: []
+  m_GUID: f4bf453d363f86443a585f0f23ef3552
+  m_SerializeEntries:
+  - m_GUID: 3e2c8e2f3d1a19041892a44440ed27ec
+    m_Address: Assets/Textures/RBCrissCross.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - textures
+    m_MainAsset: {fileID: 2800000, guid: 3e2c8e2f3d1a19041892a44440ed27ec, type: 3}
+    m_TargetAsset: {fileID: 2800000, guid: 3e2c8e2f3d1a19041892a44440ed27ec, type: 3}
+  - m_GUID: 6e59c13ee6254274788fc1b9718aeb34
+    m_Address: Assets/Textures/BWCrissCross.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - textures
+    m_MainAsset: {fileID: 2800000, guid: 6e59c13ee6254274788fc1b9718aeb34, type: 3}
+    m_TargetAsset: {fileID: 2800000, guid: 6e59c13ee6254274788fc1b9718aeb34, type: 3}
+  - m_GUID: 788a6000ed143574f97c8c83a4d3594b
+    m_Address: Assets/Textures/GYCrissCross.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - textures
+    m_MainAsset: {fileID: 2800000, guid: 788a6000ed143574f97c8c83a4d3594b, type: 3}
+    m_TargetAsset: {fileID: 2800000, guid: 788a6000ed143574f97c8c83a4d3594b, type: 3}
+  - m_GUID: 098e13a07b60a9b40ab6071138bcf27e
+    m_Address: Assets/Models/Capsule.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - mesh
+    m_MainAsset: {fileID: 4577868257188336492, guid: 098e13a07b60a9b40ab6071138bcf27e, type: 3}
+    m_TargetAsset: {fileID: 4577868257188336492, guid: 098e13a07b60a9b40ab6071138bcf27e, type: 3}
+  - m_GUID: 7b81da7b32163ea4490f82441c5b279e
+    m_Address: Assets/Models/Cylinder.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - mesh
+    m_MainAsset: {fileID: 6454577653954509537, guid: 7b81da7b32163ea4490f82441c5b279e, type: 3}
+    m_TargetAsset: {fileID: 6454577653954509537, guid: 7b81da7b32163ea4490f82441c5b279e, type: 3}
+  - m_GUID: 6255a45e8abf36b449db62b0a29f8979
+    m_Address: Assets/Models/Sphere.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - mesh
+    m_MainAsset: {fileID: 6232072290848718149, guid: 6255a45e8abf36b449db62b0a29f8979, type: 3}
+    m_TargetAsset: {fileID: 6232072290848718149, guid: 6255a45e8abf36b449db62b0a29f8979, type: 3}
+  - m_GUID: d09dcb48bf0a9a74c87fb1034d0b5d08
+    m_Address: Assets/Models/Cube.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - mesh
+    m_MainAsset: {fileID: 1930079302756449281, guid: d09dcb48bf0a9a74c87fb1034d0b5d08, type: 3}
+    m_TargetAsset: {fileID: 1930079302756449281, guid: d09dcb48bf0a9a74c87fb1034d0b5d08, type: 3}
+  - m_GUID: a3281a04a1a1b2b419c06954e7012c7c
+    m_Address: Assets/Materials/Lit.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - materials
+    m_MainAsset: {fileID: 2100000, guid: a3281a04a1a1b2b419c06954e7012c7c, type: 2}
+    m_TargetAsset: {fileID: 2100000, guid: a3281a04a1a1b2b419c06954e7012c7c, type: 2}
+  - m_GUID: a91dabc7622751a4187873080d009f54
+    m_Address: Assets/Materials/Unlit.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - materials
+    m_MainAsset: {fileID: 2100000, guid: a91dabc7622751a4187873080d009f54, type: 2}
+    m_TargetAsset: {fileID: 2100000, guid: a91dabc7622751a4187873080d009f54, type: 2}
+  - m_GUID: 1f8e38cb0e45859429356db738fcb6dd
+    m_Address: Assets/Materials/Metal.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - materials
+    m_MainAsset: {fileID: 2100000, guid: 1f8e38cb0e45859429356db738fcb6dd, type: 2}
+    m_TargetAsset: {fileID: 2100000, guid: 1f8e38cb0e45859429356db738fcb6dd, type: 2}
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: fb9cf0b546a35b64b8a2a24fbd15d2a7, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 1f1419afc2e7cb44e9ed12f7afbcd6b1, type: 2}
+    - {fileID: 11400000, guid: b9044c16128539c44b45968168bde179, type: 2}

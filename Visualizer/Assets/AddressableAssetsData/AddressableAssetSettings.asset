@@ -29,6 +29,7 @@ MonoBehaviour:
   m_GroupAssets:
   - {fileID: 11400000, guid: 93d8aaeca85b909469bcfd2dd0f49946, type: 2}
   - {fileID: 11400000, guid: 20b2aa80fb3cd3d48ad7ce648d107ee3, type: 2}
+  - {fileID: 11400000, guid: 1afac2c054843ee4482199cf2ac95845, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -71,6 +72,8 @@ MonoBehaviour:
     m_LabelNames:
     - default
     - mesh
+    - materials
+    - textures
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: dae879723f4ea5b4c8c356d7090b35a6, type: 2}
