@@ -22,6 +22,17 @@ public class InputController : MonoBehaviour
         private set => instance = value;
     }
     private static InputController instance;
+
+    public static void AddLayer(Layer layer)
+    {
+        Instance.layers.Add(layer);
+    }
+
+    public static void RemoveLayer(Layer layer)
+    {
+        Instance.layers.Remove(layer);
+    }
+
     public static int Touches => Instance.touches;
     public static Vector2 Delta => Instance.delta;
     public static Vector2 InputPosition => Instance.inputPosition;
@@ -33,6 +44,9 @@ public class InputController : MonoBehaviour
     private Vector2 inputPosition;
     private Vector2 scrollDelta;
 
+    public static event Action<bool> Touch;
+
+    private List<Layer> layers = new List<Layer>();
 
     private Vector2 MousePosition
     {
@@ -66,6 +80,8 @@ public class InputController : MonoBehaviour
                     touches = 2;
                 else
                     touches = 1;
+
+                Touch?.Invoke(true);
             }
         }
         else
@@ -81,7 +97,11 @@ public class InputController : MonoBehaviour
 
             UpdatePosition();
         }
+
+        if (!inLayer)
+        {
             scrollDelta = Input.mouseScrollDelta;
+        }
     }
 
     private void ResetPosition()
@@ -97,5 +117,20 @@ public class InputController : MonoBehaviour
         inputPosition = MousePosition;
         delta = previousTouchPosition - inputPosition;
         previousTouchPosition = inputPosition;
+    }
+
+    public class Layer
+    {
+        public Rect rect;
+
+        public bool Contains(Vector2 position)
+        {
+            return rect.Contains(position);
+        }
+
+        public Layer(Rect rect)
+        {
+            this.rect = rect;
+        }
     }
 }
