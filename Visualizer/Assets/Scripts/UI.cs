@@ -64,11 +64,15 @@ public class UI : MonoBehaviour
     private Texture2D white; 
 
     private RenderTexture renderTexture;
-    private List<ObjectData> loadedObjects = new List<ObjectData>();
-    //private List<SliderControl> sliders = new List<SliderControl>();
+    private List<GameObjectData> loadedGameobjects = new List<GameObjectData>();
+    private List<MaterialData> loadedMaterials = new List<MaterialData>();
+    private List<TextureData> loadedTextures = new List<TextureData>();
+    private List<Texture2D> textures = new List<Texture2D>();
+
     private Dictionary<string, SliderGroup> sliders = new Dictionary<string, SliderGroup>();
+
+    private int showAssets = 0;
     
-    private bool showAssets = false;
     private bool showSliders = false;
 
     int AssetButtonsWidth => (int)(shownAssetsRect.width / 3) - margins - spaceBetweenControls * 2;
@@ -89,7 +93,9 @@ public class UI : MonoBehaviour
         else if(Instance != this)
             Destroy(gameObject);
         
-        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<GameObject>("mesh", null).Completed += LoadAssets;
+        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<GameObject>("mesh", null).Completed += LoadGameobjects;
+        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<Material>("materials", null).Completed += LoadMaterials;
+        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<Texture2D>("textures", null).Completed += LoadTextures;
 
         hiddenSliderRect = new Rect(x - margins, 0, margins, Screen.height);
 
@@ -119,18 +125,31 @@ public class UI : MonoBehaviour
     {
         int x = Screen.width;
         int y = Screen.height;
-        
-        if(GUI.Button(new Rect(0, Screen.height - margins, Screen.width - margins, margins), ""))
+
+        if(GUI.Button(new Rect(0, Screen.height - margins * 2, Screen.width / 3 - margins / 3, margins * 2), "Models"))
         {
-            showAssets = !showAssets;
-            assetsLayer.rect = showAssets ? shownAssetsRect : hiddenAssetsRect; 
+            textures = loadedGameobjects.Select(l => l.render).ToList();
+            showAssets = showAssets == 1? 0 : 1;
+            assetsLayer.rect = showAssets > 0 ? shownAssetsRect : hiddenAssetsRect;
+        }
+        if (GUI.Button(new Rect(Screen.width / 3 - margins / 3, Screen.height - margins * 2, Screen.width / 3 - margins / 3, margins * 2), "Materials"))
+        {
+            textures = loadedMaterials.Select(l => l.render).ToList();
+            showAssets = showAssets == 2 ? 0 : 2;
+            assetsLayer.rect = showAssets > 0 ? shownAssetsRect : hiddenAssetsRect;
+        }
+        if (GUI.Button(new Rect(Screen.width / 3 * 2 - (margins / 3 * 2), Screen.height - margins * 2, Screen.width / 3 - margins / 3, margins * 2), "Textures"))
+        {
+            textures = loadedTextures.Select(l => l.texture).ToList();
+            showAssets = showAssets == 3 ? 0 : 3;
+            assetsLayer.rect = showAssets > 0 ? shownAssetsRect : hiddenAssetsRect;
         }
 
-        if (!showAssets)
+        if (showAssets == 0)
             return;
-
-        assetScroll = GUI.BeginScrollView(shownAssetsRect, assetScroll, new Rect(0, 0, shownAssetsRect.width - margins * 2, margins + ((AssetButtonsWidth + margins) * (loadedObjects.Count / 3 + 1))), false, true);
-        for (int i = 0; i < loadedObjects.Count; i++)
+        
+        assetScroll = GUI.BeginScrollView(shownAssetsRect, assetScroll, new Rect(0, 0, shownAssetsRect.width - margins * 2, margins + ((AssetButtonsWidth + margins) * (textures.Count / 3 + 1))), false, true);
+        for (int i = 0; i < textures.Count; i++)
         {
             int currentCollumn = i % 3;
             int currentRow = i / 3;
@@ -140,13 +159,29 @@ public class UI : MonoBehaviour
                 AssetButtonsWidth, 
                 AssetButtonsWidth);
 
-            if(GUI.Button(buttonRect, loadedObjects[i].render))
+            if(GUI.Button(buttonRect, textures[i]))
             {
-                SwapMesh(i);
+                Swap(i);
             }
         }
 
         GUI.EndScrollView();
+    }
+
+    private void Swap(int id)
+    {
+        switch(showAssets)
+        {
+            case 1:
+                SwapMesh(id);
+                break;
+            case 2:
+                SwapMaterial(id);
+                break;
+            case 3:
+                SwapTexture(id);
+                break;
+        }
     }
 
     private void SwapMesh(int id)
@@ -156,10 +191,26 @@ public class UI : MonoBehaviour
             Destroy(meshController.transform.GetChild(i).gameObject);
         }
 
-        Instantiate(loadedObjects[id].go, meshController.transform);
+        Instantiate(loadedGameobjects[id].go, meshController.transform);
     }
 
-    private void LoadAssets(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<IList<GameObject>> obj)
+    private void SwapMaterial(int id)
+    {
+        foreach(var meshRenderer in meshController.GetComponentsInChildren<MeshRenderer>())
+        {
+            meshRenderer.material = loadedMaterials[id].material;
+        }
+    }
+    
+    private void SwapTexture(int id)
+    {
+        foreach(var meshRenderer in meshController.GetComponentsInChildren<MeshRenderer>())
+        {
+            meshRenderer.material.mainTexture = loadedTextures[id].texture;
+        }
+    }
+
+    private void LoadGameobjects(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<IList<GameObject>> obj)
     {
         foreach (var go in obj.Result)
         {
@@ -170,9 +221,39 @@ public class UI : MonoBehaviour
             FitToBounds(renderCam, b);
             target.layer = 6;
             renderCam.Render();
-            loadedObjects.Add(new ObjectData { go = go, render = ReadTexture(renderTexture) });
+            loadedGameobjects.Add(new GameObjectData { go = go, render = ReadTexture(renderTexture) });
             target.SetActive(false);
             Destroy(target);
+        }
+    }
+
+    private void LoadMaterials(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<IList<Material>> obj)
+    {
+        GameObject target = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        target.transform.position = new Vector3(0, 0.5f, 0);
+        target.layer = 6;
+        FitToBounds(renderCam, new Bounds(Vector3.zero, Vector3.one + Vector3.up * 0.5f));
+
+        foreach (var mat in obj.Result)
+        {
+            MeshFilter meshFilter = target.GetComponent<MeshFilter>();
+            MeshRenderer meshRenderer = target.GetComponent<MeshRenderer>();
+            meshRenderer.material = mat;
+
+            renderCam.Render();
+
+            loadedMaterials.Add(new MaterialData { material = mat, render = ReadTexture(renderTexture) });
+        }
+
+        target.SetActive(false);
+        Destroy(target);
+    }
+
+    private void LoadTextures(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<IList<Texture2D>> obj)
+    {
+        foreach (var tex in obj.Result)
+        {
+            loadedTextures.Add(new TextureData { texture = tex });
         }
     }
 
@@ -272,10 +353,21 @@ public class UI : MonoBehaviour
 
         sliderLayer.rect = new Rect(currentX, 0, x / 3, currentY);
     }
-
-    struct ObjectData
+    
+    struct GameObjectData
     {
         public GameObject go;
         public Texture2D render;
+    }
+
+    struct MaterialData
+    {
+        public Material material;
+        public Texture2D render;
+    }
+
+    struct TextureData
+    {
+        public Texture2D texture;
     }
 }
