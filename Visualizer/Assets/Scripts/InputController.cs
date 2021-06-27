@@ -115,8 +115,8 @@ public class InputController : MonoBehaviour
             UpdatePosition();
         }
 
-        if (!layers.Any(l => l.Contains(MousePosition)))
-            scrollDelta = Input.mouseScrollDelta;
+        if(!layers.Any(l => l.Contains(MousePosition)))
+            scrollDelta = Input.mouseScrollDelta * 0.1f;
     }
 
     private void HandeldInput()
@@ -188,7 +188,7 @@ public class InputController : MonoBehaviour
         public bool DoubleTap => SystemInfo.deviceType == DeviceType.Handheld ? Input.touchCount > 0 && Input.GetTouch(0).tapCount > 1 : Time.time - lastRecordedTap <= DoubleTapDelay;
         public float lastRecordedTap;
         public Rect rect;
-        public bool blocker;
+        public bool blocker = true;
 
         public event EventHandler<float> Interacted;
         
@@ -196,7 +196,6 @@ public class InputController : MonoBehaviour
         {
             if (rect.Contains(position))
             {
-
                 Interacted?.Invoke(this, Time.time);
                 lastRecordedTap = Time.time;
 
@@ -208,7 +207,7 @@ public class InputController : MonoBehaviour
 
         public bool Contains(Vector2 position)
         {
-            return rect.Contains(position);
+            return blocker && rect.Contains(position);
         }
         
         public Layer(Rect rect)
