@@ -45,20 +45,53 @@ public class UI : MonoBehaviour
         private set => instance = value;
     }
     private static UI instance;
-    
-    public int margins = 50;
-    public int spaceBetweenControls = 50;
-    public int sliderHeight = 40;
-    public int sliderWidth = 60;
-    public float lightIntensity = 0.5f;
-    
+
+    [Range(0, 0.05f)]
+    public float margins = 0.025f;
+    private int Margins => UIRatioToScreenSize(margins, Orientation.width);
+    [Range(0, 0.05f)]
+    public float spaceBetweenControls = 0.025f;
+    private int SpaceBetweenControls => UIRatioToScreenSize(spaceBetweenControls, Orientation.width);
+    [Range(0, 0.05f)]
+    public float sliderHeight = 0.025f;
+    private int SliderHeight => UIRatioToScreenSize(sliderHeight, Orientation.height);
+    [Range(0, 0.05f)]
+    public float buttonsHeight = 0.025f;
+    private int ButtonsHeight => UIRatioToScreenSize(buttonsHeight, Orientation.height);
+    [Range(0, 0.5f)]
+    public float sideMenuWidth = 0.35f;
+    private int SideMenuWitdth => UIRatioToScreenSize(sideMenuWidth, Orientation.width);
+
+    [Range(0, 0.5f)]
+    public float bottomTapHeight = 0.1f; 
+    public int BottomTapHeight => UIRatioToScreenSize(bottomTapHeight, Orientation.height); 
+    [Range(0, 0.5f)]
+    public float sideTapWidth = 0.1f; 
+    public int SideTapWidth => UIRatioToScreenSize(sideTapWidth, Orientation.width); 
+    [Range(0, 1f)]
+    public float assetsMenuHeight = 0.35f; 
+    private int AssetsMenuHeight => UIRatioToScreenSize(assetsMenuHeight, Orientation.height);
+
+    [Range(1, 10)]
+    public int AssetsPerRow = 3;
+
+    [Range(0,100)]
+    public int fontSize = 48;
+
     public Camera renderCam;
     public MeshController meshController;
 
+    private int Width => Screen.width;
+    private int Height => Screen.height;
+
+    public GUIStyle labelStyle;
+    public GUIStyle buttonStyle;
+    public GUIStyle sliderStyle;
+    public GUIStyle thumbStyle;
+
     private Vector2 assetScroll = Vector2.zero;
-    private Rect hiddenSliderRect;
-    private Rect hiddenAssetsRect;
-    private Rect shownAssetsRect;
+    private Rect sliderRect;
+    private Rect assetsRect;
     private InputController.Layer assetsLayer;
     private InputController.Layer sliderLayer;
     private Texture2D white; 
@@ -72,10 +105,9 @@ public class UI : MonoBehaviour
     private Dictionary<string, SliderGroup> sliders = new Dictionary<string, SliderGroup>();
 
     private int showAssets = 0;
-    
     private bool showSliders = false;
 
-    int AssetButtonsWidth => (int)(shownAssetsRect.width / 3) - margins - spaceBetweenControls * 2;
+    int AssetButtonsWidth => (int)(assetsRect.width * (1f / (float)AssetsPerRow) - Margins - SpaceBetweenControls * (AssetsPerRow - 1));
 
     public static void RequestSliderControl(System.Action<float> action, string name, string category, float min = 0f, float max = 1f, float initial = 0.5f)
     {
@@ -87,75 +119,218 @@ public class UI : MonoBehaviour
 
     void Start()
     {
-        int x = Screen.width;
         if (Instance == null)
             Instance = this;
-        else if(Instance != this)
+        else if (Instance != this)
             Destroy(gameObject);
-        
-        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<GameObject>("mesh", null).Completed += LoadGameobjects;
-        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<Material>("materials", null).Completed += LoadMaterials;
-        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<Texture2D>("textures", null).Completed += LoadTextures;
 
-        hiddenSliderRect = new Rect(x - margins, 0, margins, Screen.height);
-
-        hiddenAssetsRect = new Rect(0, margins, Screen.width, margins);
-        shownAssetsRect = new Rect(0, Screen.height / 3 * 2 - margins, x - margins, Screen.height * 0.33f);
-        
         white = new Texture2D(1, 1);
         white.SetPixel(0, 0, Color.white);
-        
+
+        sliderRect = new Rect(Width - SideTapWidth, 0, SideTapWidth, Screen.height);
+        assetsRect = new Rect(0, Height - AssetsMenuHeight, Width, AssetsMenuHeight);
+
         renderTexture = new RenderTexture(AssetButtonsWidth, AssetButtonsWidth, 24);
         renderCam.forceIntoRenderTexture = true;
         renderCam.targetTexture = renderTexture;
 
-        assetsLayer = new InputController.Layer(hiddenAssetsRect);
-        sliderLayer = new InputController.Layer(hiddenSliderRect);
+        assetsLayer = new InputController.Layer(assetsRect) { blocker = false };
+        sliderLayer = new InputController.Layer(sliderRect) { blocker = false };
+        var whole = new InputController.Layer(new Rect(0, 0, Width, Height)) { blocker = false };
+
+        InputController.AddLayer(whole);
         InputController.AddLayer(assetsLayer);
         InputController.AddLayer(sliderLayer);
+
+        assetsLayer.Interacted += OnAssetsLayerInteract;
+        sliderLayer.Interacted += OnSliderLayerInteract;
+        whole.Interacted += OnGeneralInteract;
+
+        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<GameObject>("mesh", null).Completed += LoadGameobjects;
+        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<Material>("materials", null).Completed += LoadMaterials;
+        UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<Texture2D>("textures", null).Completed += LoadTextures;
     }
 
+    private void OnGeneralInteract(object sender, float e)
+    {
+        InputController.Layer layer = (InputController.Layer)sender;
+        if (!layer.DoubleTap)
+            return;
+
+        HideSliders();
+        HideAssets();
+    }
+
+    private void OnSliderLayerInteract(object sender, float time)
+    {
+        InputController.Layer layer = (InputController.Layer)sender;
+        if (!layer.DoubleTap)
+            return;
+
+        if (!showSliders)
+            ShowSliders();
+        else
+            HideSliders();
+
+        HideAssets();
+    }
+
+    private void OnAssetsLayerInteract(object sender, float time)
+    {
+        InputController.Layer layer = (InputController.Layer)sender;
+        if (!layer.DoubleTap || showAssets != 0)
+            return;
+
+        HideSliders();
+        ShowAssets();
+    }
+
+    private void HideAssets()
+    {
+        assetsLayer.blocker = false;
+        showAssets = 0;
+    }
+
+    private void ShowAssets()
+    {
+        textures = loadedGameobjects.Select(l => l.render).ToList();
+        assetsLayer.blocker = true;
+        showAssets = 1;
+    }
+
+    private void HideSliders()
+    {
+        sliderLayer.blocker = false;
+        showSliders = false;
+    }
+
+    private void ShowSliders()
+    {
+        sliderLayer.blocker = true;
+        showSliders = true;
+    }
+
+    private void OnDestroy()
+    {
+        assetsLayer.Interacted -= OnAssetsLayerInteract;
+        sliderLayer.Interacted -= OnSliderLayerInteract;
+    }
+    
     void OnGUI()
     {
+        InitializeGUI();
         DrawSliders();
         DrawAssetsMenu();
     }
 
+    private void OnValidate()
+    {
+        initialized = false;
+    }
+
+    private bool initialized = false;
+    private void InitializeGUI()
+    {
+        if (initialized)
+            return;
+
+        initialized = true;
+        GUI.skin.label.fontSize = SliderHeight - 4;
+        GUI.skin.label.alignment = TextAnchor.UpperLeft;
+        GUI.skin.button.fontSize = ButtonsHeight - 4;
+        GUI.skin.horizontalSliderThumb.stretchHeight = true;
+        GUI.skin.horizontalSliderThumb.fixedHeight = 0;
+        GUI.skin.horizontalSliderThumb.fixedWidth = SliderHeight;
+        GUI.skin.horizontalSlider.fixedHeight = 0;
+        
+        GUI.skin.horizontalSliderThumb.alignment = TextAnchor.MiddleLeft;
+        GUI.skin.verticalScrollbar.fixedWidth = ButtonsHeight;
+        GUI.skin.verticalScrollbarThumb.fixedWidth = ButtonsHeight;
+        
+        labelStyle = GUI.skin.label;
+        buttonStyle = GUI.skin.button;
+        sliderStyle = GUI.skin.horizontalSlider;
+        thumbStyle = GUI.skin.horizontalSliderThumb;
+
+        sliderRect = new Rect(Width - SideTapWidth, 0, SideTapWidth, Screen.height);
+        assetsRect = new Rect(0, Screen.height - AssetsMenuHeight - ButtonsHeight - SpaceBetweenControls, Width, AssetsMenuHeight - ButtonsHeight - SpaceBetweenControls);
+    }
+
+    void DrawSliders()
+    {
+        if (!showSliders)
+            return;
+
+        int currentY = Margins;
+        int currentX = Width - SideMenuWitdth;
+        
+        foreach ((string category, SliderGroup sliderGroup) in sliders.Select(s => (s.Key, s.Value)))
+        {
+            int guiGroupHeight = sliderGroup.Count * (SliderHeight + SpaceBetweenControls);
+            
+            if (GUI.Button(new Rect(Width - Margins - SideMenuWitdth, currentY, SideMenuWitdth, ButtonsHeight), category))
+            {
+                sliderGroup.enabled = !sliderGroup.enabled;
+            }
+            currentY += ButtonsHeight;
+
+            if (!sliderGroup.enabled)
+            {
+                currentY += Margins + SpaceBetweenControls;
+                continue;
+            }
+
+            GUI.BeginGroup(new Rect(currentX, currentY, SideMenuWitdth, guiGroupHeight), "");
+
+            for (int i = 0; i < sliderGroup.Count; i++)
+            {
+                Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(sliderGroup[i].name + " "));
+                float controlY = (SliderHeight + SpaceBetweenControls) * i;
+
+                GUI.DrawTexture(new Rect(labelSize.x, controlY + labelSize.y * .5f, SideMenuWitdth - labelSize.x - Margins, 2), white);
+                GUI.Label(new Rect(0, controlY, labelSize.x, labelSize.y), sliderGroup[i].name + " ");
+                float newValue = GUI.HorizontalSlider(new Rect(labelSize.x, controlY, SideMenuWitdth - labelSize.x - Margins, SliderHeight), sliderGroup[i].value, sliderGroup[i].min, sliderGroup[i].max);
+
+                if (!Mathf.Approximately(newValue, sliderGroup[i].value))
+                {
+                    sliderGroup[i].action?.Invoke(newValue);
+                    sliderGroup[i].SetValue(newValue);
+                }
+            }
+            currentY += guiGroupHeight + Margins;
+            GUI.EndGroup();
+        }
+    }
+
     void DrawAssetsMenu()
     {
-        int x = Screen.width;
-        int y = Screen.height;
-
-        if(GUI.Button(new Rect(0, Screen.height - margins * 2, Screen.width / 3 - margins / 3, margins * 2), "Models"))
-        {
-            textures = loadedGameobjects.Select(l => l.render).ToList();
-            showAssets = showAssets == 1? 0 : 1;
-            assetsLayer.rect = showAssets > 0 ? shownAssetsRect : hiddenAssetsRect;
-        }
-        if (GUI.Button(new Rect(Screen.width / 3 - margins / 3, Screen.height - margins * 2, Screen.width / 3 - margins / 3, margins * 2), "Materials"))
-        {
-            textures = loadedMaterials.Select(l => l.render).ToList();
-            showAssets = showAssets == 2 ? 0 : 2;
-            assetsLayer.rect = showAssets > 0 ? shownAssetsRect : hiddenAssetsRect;
-        }
-        if (GUI.Button(new Rect(Screen.width / 3 * 2 - (margins / 3 * 2), Screen.height - margins * 2, Screen.width / 3 - margins / 3, margins * 2), "Textures"))
-        {
-            textures = loadedTextures.Select(l => l.texture).ToList();
-            showAssets = showAssets == 3 ? 0 : 3;
-            assetsLayer.rect = showAssets > 0 ? shownAssetsRect : hiddenAssetsRect;
-        }
-
         if (showAssets == 0)
             return;
-        
-        assetScroll = GUI.BeginScrollView(shownAssetsRect, assetScroll, new Rect(0, 0, shownAssetsRect.width - margins * 2, margins + ((AssetButtonsWidth + margins) * (textures.Count / 3 + 1))), false, true);
+
+        if(GUI.Button(new Rect(0, Height - ButtonsHeight, Width * .33f - Margins * .33f, ButtonsHeight), "Models"))
+        {
+            textures = loadedGameobjects.Select(l => l.render).ToList();
+            showAssets = 1;
+        }
+        if (GUI.Button(new Rect(Width * .33f - Margins * .33f, Height - ButtonsHeight, Width * .33f - Margins * .33f, ButtonsHeight), "Materials"))
+        {
+            textures = loadedMaterials.Select(l => l.render).ToList();
+            showAssets = 2;
+        }
+        if (GUI.Button(new Rect(Width * .66f - Margins * .66f, Height - ButtonsHeight, Width * .33f - Margins * .33f, ButtonsHeight), "Textures"))
+        {
+            textures = loadedTextures.Select(l => l.texture).ToList();
+            showAssets = 3;
+        }
+
+        assetScroll = GUI.BeginScrollView(assetsRect, assetScroll, new Rect(0, 0, assetsRect.width - ButtonsHeight - 1, Margins + ((AssetButtonsWidth + Margins) * (textures.Count / AssetsPerRow + 1))), false, true);
         for (int i = 0; i < textures.Count; i++)
         {
-            int currentCollumn = i % 3;
-            int currentRow = i / 3;
+            int currentCollumn = i % AssetsPerRow;
+            int currentRow = i / AssetsPerRow;
             Rect buttonRect = new Rect(
-                margins + spaceBetweenControls * currentCollumn + AssetButtonsWidth * currentCollumn,
-                (spaceBetweenControls * currentRow) + (currentRow * AssetButtonsWidth), 
+                Margins + SpaceBetweenControls * currentCollumn + AssetButtonsWidth * currentCollumn,
+                (SpaceBetweenControls * currentRow) + (currentRow * AssetButtonsWidth), 
                 AssetButtonsWidth, 
                 AssetButtonsWidth);
 
@@ -214,7 +389,7 @@ public class UI : MonoBehaviour
     {
         foreach (var go in obj.Result)
         {
-            var target = Instantiate(go, Vector3.zero, Quaternion.identity);
+            var target = Instantiate(go);
             MeshFilter meshFilter = target.GetComponent<MeshFilter>();
             Bounds b = GetBounds(target);
 
@@ -260,12 +435,17 @@ public class UI : MonoBehaviour
     Bounds GetBounds(GameObject go)
     {
         Bounds bounds = new Bounds();
-        foreach(var meshFilter in go.GetComponentsInChildren<MeshFilter>())
+        Vector3 center = Vector3.zero;
+        int count = 0;
+        foreach (var meshFilter in go.GetComponentsInChildren<MeshFilter>())
         {
             bounds.Encapsulate(meshFilter.mesh.bounds);
+            center += meshFilter.mesh.bounds.center;
+            count++;
         }
+        center /= count;
 
-        bounds.Expand(0.1f);
+        bounds.center = center;
         return bounds;
     }
 
@@ -273,14 +453,14 @@ public class UI : MonoBehaviour
     {
         float fov = camera.fieldOfView;
         Vector3 extents = bounds.extents;
-        float max = extents.x;
-        if (extents.y > max)
+        float max = extents.x + bounds.center.x;
+        if (extents.y + bounds.center.y > max)
             max = extents.y;
-        if (extents.z > max)
+        if (extents.z + bounds.center.z > max)
             max = extents.z;
         
         float dist = max / Mathf.Tan(fov);
-        camera.gameObject.transform.position = -camera.gameObject.transform.forward * dist;
+        camera.gameObject.transform.position = -camera.gameObject.transform.forward * dist + Vector3.up;
     }
 
     private Texture2D ReadTexture(RenderTexture renderTexture)
@@ -294,66 +474,13 @@ public class UI : MonoBehaviour
         RenderTexture.active = swap;
         return texture;
     }
-
-    void DrawSliders()
-    {
-        GUIStyle style = new GUIStyle();
-
-        int x = Screen.width;
-        int y = Screen.height;
-
-        if(GUI.Button(new Rect(x - margins, 0, margins, y), ""))
-        {
-            showSliders = !showSliders;
-        }
-
-        if (!showSliders)
-            return;
-        
-        int currentY = margins;
-        int currentX = x / 3 * 2;
-        int sliderWidth = x / 3 - margins - spaceBetweenControls;
-
-        foreach ((string category, SliderGroup sliderGroup) in sliders.Select(s => (s.Key, s.Value)))
-        {
-            int guiGroupHeight = sliderGroup.Count * (sliderHeight + spaceBetweenControls);
-
-            if (GUI.Button(new Rect(x - margins - sliderWidth, currentY, sliderWidth, margins * 2), category))
-            {
-                sliderGroup.enabled = !sliderGroup.enabled;
-            }
-            currentY += margins * 2;
-            
-            if(!sliderGroup.enabled)
-            {
-                currentY += margins + spaceBetweenControls;
-                continue;
-            }
-
-            GUI.BeginGroup(new Rect(currentX, currentY, x / 3, guiGroupHeight), "");
-
-            for (int i = 0; i < sliderGroup.Count; i++)
-            {
-                Vector2 labelSize = style.CalcSize(new GUIContent(sliderGroup[i].name + " "));
-                float controlY = (labelSize.y + spaceBetweenControls) * i;
-
-                GUI.DrawTexture(new Rect(labelSize.x, controlY + 10, sliderWidth - labelSize.x, 2), white);
-                GUI.Label(new Rect(0, controlY, labelSize.x, sliderWidth), sliderGroup[i].name + " ");
-                float newValue = GUI.HorizontalSlider(new Rect(labelSize.x, controlY + 5, sliderWidth - labelSize.x, sliderHeight), sliderGroup[i].value, sliderGroup[i].min, sliderGroup[i].max);
-
-                if (!Mathf.Approximately(newValue, sliderGroup[i].value))
-                {
-                    sliderGroup[i].action?.Invoke(newValue);
-                    sliderGroup[i].SetValue(newValue);
-                }
-            }
-            currentY += guiGroupHeight + margins;
-            GUI.EndGroup();
-        }
-
-        sliderLayer.rect = new Rect(currentX, 0, x / 3, currentY);
-    }
     
+    enum Orientation { width, height };
+    private int UIRatioToScreenSize(float pct, Orientation orientation)
+    {
+        return (int)((orientation == Orientation.height? Screen.height : Screen.width) * pct);
+    }
+
     struct GameObjectData
     {
         public GameObject go;
