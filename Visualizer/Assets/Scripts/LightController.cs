@@ -4,7 +4,6 @@ public class LightController : MonoBehaviour
 {
     public float minIntensity = 0f;
     public float maxIntensity = 10f;
-    public string lightName = "Light";
 
     public GameObject rotateTarget;
 
@@ -18,9 +17,9 @@ public class LightController : MonoBehaviour
         Vector3 eulerRot = gameObject.transform.rotation.eulerAngles;
         
         directionalLight = GetComponent<Light>();
-        UI.RequestSliderControl(OnIntensityChanged, $"{lightName} intensity", "Lighting", initial: (directionalLight.intensity - minIntensity) / maxIntensity);
-        UI.RequestSliderControl(OnYawChanged, $"{lightName} yaw", "Lighting", 0, 359, 0);
-        UI.RequestSliderControl(OnPitchChanged, $"{lightName} pitch", "Lighting", 0, 180, 45);
+        UI.RequestSliderControl(OnIntensityChanged, $"Intensity", "Lighting", initial: (directionalLight.intensity - minIntensity) / maxIntensity);
+        UI.RequestSliderControl(OnYawChanged, $"Yaw", "Lighting", 0, 359, yaw = 66f);
+        UI.RequestSliderControl(OnPitchChanged, $"Pitch", "Lighting", 0, 180, pitch = 33f);
     }
 
     public void OnIntensityChanged(float ratio)
