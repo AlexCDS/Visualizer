@@ -92,8 +92,9 @@ public class UI : MonoBehaviour
     private Vector2 assetScroll = Vector2.zero;
     private Rect sliderRect;
     private Rect assetsRect;
-    private InputController.Layer assetsLayer;
-    private InputController.Layer sliderLayer;
+    private VisualizerInput.Layer assetsLayer;
+    private VisualizerInput.Layer sliderLayer;
+    private VisualizerInput.Layer screenLayer;
     private Texture2D white; 
 
     private RenderTexture renderTexture;
@@ -134,17 +135,17 @@ public class UI : MonoBehaviour
         renderCam.forceIntoRenderTexture = true;
         renderCam.targetTexture = renderTexture;
 
-        assetsLayer = new InputController.Layer(assetsRect) { blocker = false };
-        sliderLayer = new InputController.Layer(sliderRect) { blocker = false };
-        var whole = new InputController.Layer(new Rect(0, 0, Width, Height)) { blocker = false };
+        assetsLayer = new VisualizerInput.Layer(assetsRect) { blocker = false };
+        sliderLayer = new VisualizerInput.Layer(sliderRect) { blocker = false };
+        whole = new VisualizerInput.Layer(new Rect(0, 0, Width, Height)) { blocker = false };
 
-        InputController.AddLayer(whole);
-        InputController.AddLayer(assetsLayer);
-        InputController.AddLayer(sliderLayer);
+        VisualizerInput.AddLayer(whole);
+        VisualizerInput.AddLayer(assetsLayer);
+        VisualizerInput.AddLayer(sliderLayer);
 
         assetsLayer.Interacted += OnAssetsLayerInteract;
         sliderLayer.Interacted += OnSliderLayerInteract;
-        whole.Interacted += OnGeneralInteract;
+        screenLayer.Interacted += OnGeneralInteract;
 
         UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<GameObject>("mesh", null).Completed += LoadGameobjects;
         UnityEngine.AddressableAssets.Addressables.LoadAssetsAsync<Material>("materials", null).Completed += LoadMaterials;
@@ -153,7 +154,7 @@ public class UI : MonoBehaviour
 
     private void OnGeneralInteract(object sender, float e)
     {
-        InputController.Layer layer = (InputController.Layer)sender;
+        VisualizerInput.Layer layer = (VisualizerInput.Layer)sender;
         if (!layer.DoubleTap)
             return;
 
@@ -163,7 +164,7 @@ public class UI : MonoBehaviour
 
     private void OnSliderLayerInteract(object sender, float time)
     {
-        InputController.Layer layer = (InputController.Layer)sender;
+        VisualizerInput.Layer layer = (VisualizerInput.Layer)sender;
         if (!layer.DoubleTap)
             return;
 
@@ -177,7 +178,7 @@ public class UI : MonoBehaviour
 
     private void OnAssetsLayerInteract(object sender, float time)
     {
-        InputController.Layer layer = (InputController.Layer)sender;
+        VisualizerInput.Layer layer = (VisualizerInput.Layer)sender;
         if (!layer.DoubleTap || showAssets != 0)
             return;
 
@@ -214,6 +215,7 @@ public class UI : MonoBehaviour
     {
         assetsLayer.Interacted -= OnAssetsLayerInteract;
         sliderLayer.Interacted -= OnSliderLayerInteract;
+        screenLayer.Interacted -= OnGeneralInteract;
     }
     
     void OnGUI()

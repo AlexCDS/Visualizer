@@ -5,23 +5,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class InputController : MonoBehaviour
+public class VisualizerInput : MonoBehaviour
 {
     #region Static
-    public static InputController Instance
+    public static VisualizerInput Instance
     {
         get
         {
             if (instance == null)
             {
-                instance = FindObjectOfType<InputController>();
+                instance = FindObjectOfType<VisualizerInput>();
             }
 
             return instance;
         }
         private set => instance = value;
     }
-    private static InputController instance;
+    private static VisualizerInput instance;
 
     public static void AddLayer(Layer layer)
     {
@@ -74,10 +74,10 @@ public class InputController : MonoBehaviour
 
     public void Update()
     {
-#if UNITY_WIN || UNITY_OSX || UNITY_EDITOR
-        PcInput();
-#elif UNITY_IOS || UNITY_ANDROID
+#if UNITY_IOS || UNITY_ANDROID
         HandeldInput();
+#else
+        PcInput();
 #endif
     }
 

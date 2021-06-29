@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 
-public class PostProcessControl : MonoBehaviour
+public class PostProcessController : MonoBehaviour
 {
     public float floatParamMax = 10f;
     

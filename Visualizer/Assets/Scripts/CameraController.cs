@@ -30,10 +30,10 @@ public class CameraController : MonoBehaviour
     
     void Update()
     {
-        if (InputController.TouchCount == 2)
+        if (VisualizerInput.TouchCount == 2)
         {
-            Vector3 rot = new Vector3(movementIntensity.Evaluate(Mathf.Abs(InputController.Delta.x) / Screen.width) * Mathf.Sign(InputController.Delta.x) * rotSpeedYaw,
-                movementIntensity.Evaluate(Mathf.Abs(InputController.Delta.y) / Screen.height) * Mathf.Sign(InputController.Delta.y) * rotSpeedPitch);
+            Vector3 rot = new Vector3(movementIntensity.Evaluate(Mathf.Abs(VisualizerInput.Delta.x) / Screen.width) * Mathf.Sign(VisualizerInput.Delta.x) * rotSpeedYaw,
+                movementIntensity.Evaluate(Mathf.Abs(VisualizerInput.Delta.y) / Screen.height) * Mathf.Sign(VisualizerInput.Delta.y) * rotSpeedPitch);
 
             pitch = Mathf.Clamp(pitch + rot.y, -45, 90);
             yaw += rot.x;
@@ -41,9 +41,9 @@ public class CameraController : MonoBehaviour
             rotationAnchor.transform.rotation = Quaternion.Euler(pitch, yaw, 0);
             position = gameObject.transform.position;
         }
-        else if(InputController.TouchCount == 1)
+        else if(VisualizerInput.TouchCount == 1)
         {
-            velocity = rotationAnchor.transform.rotation * (movementIntensity.Evaluate(InputController.Delta.magnitude / Screen.width) * InputController.Delta) * speed;
+            velocity = rotationAnchor.transform.rotation * (movementIntensity.Evaluate(VisualizerInput.Delta.magnitude / Screen.width) * VisualizerInput.Delta) * speed;
         }
 
         if(velocity.magnitude > 0)
@@ -69,9 +69,9 @@ public class CameraController : MonoBehaviour
                 velocity -= velocity * velocityDampening * Time.deltaTime;
         }
 
-        if (InputController.ScrollDelta.magnitude > 0)
+        if (VisualizerInput.ScrollDelta.magnitude > 0)
         {
-            Vector3 move = new Vector3(0,0, zoomSpeed * InputController.ScrollDelta.y);
+            Vector3 move = new Vector3(0,0, zoomSpeed * VisualizerInput.ScrollDelta.y);
             
             if ((gameObject.transform.localPosition + move).z > -1f || (gameObject.transform.localPosition + move).z < -20f)
                 return;
