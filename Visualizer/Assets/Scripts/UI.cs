@@ -137,9 +137,9 @@ public class UI : MonoBehaviour
 
         assetsLayer = new VisualizerInput.Layer(assetsRect) { blocker = false };
         sliderLayer = new VisualizerInput.Layer(sliderRect) { blocker = false };
-        whole = new VisualizerInput.Layer(new Rect(0, 0, Width, Height)) { blocker = false };
+        screenLayer = new VisualizerInput.Layer(new Rect(0, 0, Width, Height)) { blocker = false };
 
-        VisualizerInput.AddLayer(whole);
+        VisualizerInput.AddLayer(screenLayer);
         VisualizerInput.AddLayer(assetsLayer);
         VisualizerInput.AddLayer(sliderLayer);
 
