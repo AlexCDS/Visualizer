@@ -12,7 +12,7 @@ Pinch two fingers in and out to zoom. <br />
 
 
 Use the Assets menu to change models, materials or textures. Double tap the lower area to open it.
+The Sliders menu can be used to modify lightning, mesh or post process values. Double tap the right area to open it. <br />
 
-The Sliders menu can be used to modify lightning, mesh or post process values. Double tap the right area to open it.
 ![Assets Demo](/Screenshots/AssetsDemo.gif)
 ![Sliders Demo](/Screenshots/SlidersDemo.gif)
